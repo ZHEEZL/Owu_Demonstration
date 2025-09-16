@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block style %}
+body {
+margin: 0;
+padding: 0;
+}
+
+main {
+margin-left: 200px;
+padding: 60px 0px 20px;
+width: 100%;
+overflow: hidden;
+}
+
+.channel-button-subscribe {
+display: flex;
+margin-left: 0px;
+padding: 1.5%;
+color: var(--background-color);
+}
+
+.container-channel {
+width: 100%;
+margin: 0 auto;
+padding: 0 16px;
+}
+
+.container-videos {
+width: 100%;}
+
+/* Channel Header */
+.channel-header {
+width: 100%;
+background-color: var(--background-color);
+margin-bottom: 20px;
+}
+
+.channel-banner {
+width: 100%;
+height: 200px;
+background: url('{{ url_for('static', filename='banners/' + (viewed_user.banner_filename if viewed_user.banner_filename else 'default-banner.png')) }}') no-repeat center center;
+background-size: cover;
+}
+
+.channel-info {
+display: flex;
+margin-right: 10%;
+margin-left: 10%
+}
+
+.channel-avatar {
+min-width: 80px;
+min-height: 80px;
+border-radius: 50%;
+margin-right: 24px;
+}
+
+.channel-details {
+flex-grow: 1;
+}
+
+.channel-details h1 {
+font-size: 24px;
+margin: 0 0 4px 0;
+}
+
+.channel-details p {
+color: #606060;
+font-size: 14px;
+margin: 0;
+}
+
+/* Navigation */
+.tabs-container {
+width: 100%;
+background-color: var(--background-color);
+border-top: 1px solid var(--border-color);
+border-bottom: 1px solid var(--border-color);
+}
+
+.tabs-inner-container {
+max-width: 1284px;
+margin: 0 auto;
+padding: 0 24px;
+}
+
+.tabs-content {
+display: flex;
+align-items: center;
+height: 48px;
+}
+
+.tab {
+padding: 0 32px;
+color: var(--text-color);
+font-size: 14px;
+font-weight: 500;
+text-decoration: none;
+height: 100%;
+display: flex;
+align-items: center;
+border-bottom: 3px solid transparent;
+transition: color 0.1s, border-bottom-color 0.1s;
+}
+
+.tab:hover {
+color: var(--background-color);
+}
+
+.tab.active {
+color: var(--text-color);
+border-bottom-color: var(--text-color);
+}
+
+.channel-nav ul {
+list-style-type: none;
+padding: 0;
+margin: 0;
+display: flex;
+}
+
+.channel-nav li {
+margin-right: 32px;
+}
+
+.channel-nav a {
+display: inline-block;
+padding: 16px 0;
+color: #606060;
+text-decoration: none;
+font-size: 14px;
+font-weight: 500;
+}
+
+.channel-nav a.active {
+color: #000;
+border-bottom: 3px solid #000;
+}
+
+/* Video Grid */
+.videos-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+gap: 16px;
+}
+
+.video-item {
+text-decoration: none;
+color: #000;
+}
+
+.video-item img {
+width: 100%;
+aspect-ratio: 16 / 9;
+object-fit: cover;
+border-radius: 8px;
+}
+
+.video-item h3 {
+font-size: 14px;
+margin: 8px 0 4px 0;
+line-height: 1.3;
+color: var(--text-color);
+}
+
+.video-item p {
+color: #606060;
+font-size: 12px;
+margin: 0;
+}
+
+@media screen and (max-width: 768px) {
+main {
+margin-left: 0px;
+margin-top: 15vh;
+padding: 0px 0px 0px;
+width: 100%;
+}
+.channel-info {
+margin-left: 0px;
+}
+}
+
+{% endblock %}
+
+{% block content %}
+<div class="channel-header">
+    <div class="channel-banner"></div>
+    <div class="container-channel">
+        <div class="channel-info">
+            <img src="{{ url_for('static', filename='avatars/' + (viewed_user.avatar_filename if viewed_user.avatar_filename else 'def-avatar.png')) }}"
+                 alt="{{ viewed_user.username }}" class="channel-avatar">
+            <div class="channel-details">
+                <h1>{{ viewed_user.channel_name }}</h1>
+                <p class="video-stats">{{ viewed_user.subscribers_count() }} подписчиков • {{ videos|length }} видео</p>
+                <p>{{ viewed_user.channel_description }}</p>
+            </div>
+            <a class="channel-button-subscribe">
+                <button class="subscribe-button {{ 'subscribed' if not current_user.is_anonymous and current_user.is_subscribed(viewed_user) else '' }}"
+                        onclick="toggleSubscribe({{ viewed_user.id }})">
+                    {{ 'Отписаться' if not current_user.is_anonymous and current_user.is_subscribed(viewed_user) else
+                    'Подписаться' }}
+                </button>
+            </a>
+        </div>
+    </div>
+    <div class="tabs-container">
+        <div class="tabs-inner-container">
+            <div class="tabs-content">
+                <dialog id="myDialog">
+                    <p>В разработке.</p>
+                    <button id="closeDialogButton">Закрыть</button>
+                </dialog>
+                <a href="#" class="tab active">Главная</a>
+                <a href="#" class="tab"> Видео</a>
+                <a href="#" class="tab">Плейлисты</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-videos">
+    <div class="videos-section" style="padding: 0 24px; margin: 0 auto; max-width: 1284px;">
+        <h2>Все видео</h2>
+        <div class="videos-grid">
+            {% for video in videos %}
+            <div class="video-item">
+                <a href="{{ url_for('view_video', video_id=video.video_id) }}">
+                    <div class="thumbnail" style="position: relative; width: 100%;">
+                        <img src="{{ url_for('static', filename='thumbnails/' ~ video.thumbnail_filename) }}"
+                             alt="{{ video.title }}">
+                        <span class="video-duration">{{ video.duration }}</span>
+                    </div>
+                    <div class="video-info">
+                        <h3>{{ video.title }}</h3>
+                        <p>{{ video.views }} просмотров • {{ video.formatted_upload_date }}</p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

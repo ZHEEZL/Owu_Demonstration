@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owu - Регистрация</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .register-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 320px;
+            text-align: center;
+        }
+
+        .register-container h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .register-container input[type="text"],
+        .register-container input[type="password"],
+        .register-container input[type="email"],
+        .register-container input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .register-container input[type="text"]:focus,
+        .register-container input[type="password"]:focus,
+        .register-container input[type="email"]:focus {
+            outline: none;
+            border-color: #0073e6;
+        }
+
+        .register-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #ff6666;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .register-container button:hover {
+            background-color: #ff5050;
+        }
+
+        .register-container .login-link {
+            color: #0073e6;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .register-container .login-link:hover {
+            text-decoration: underline;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="register-container">
+    <a href="{{ url_for('home') }}">
+        <div class="logo">Owu <span>Alpha</span></div>
+    </a>
+    <h2>Регистрация</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <input type="text" name="username" placeholder="Имя пользователя" required>
+        <input type="email" name="email" placeholder="E-mail" required>
+        <input type="password" name="password" placeholder="Пароль" required>
+        <input type="password" name="confirm_password" placeholder="Подтвердите пароль" required>
+        <input type="file" name="avatar" accept="image/*">
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+    <a class="login-link" href="{{ url_for('login') }}">Уже есть аккаунт? Войти</a>
+</div>
+</body>
+</html>

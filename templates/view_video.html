@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=auto">
+    <title>{{ video.title }} - Owu</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css"/>
+    <style>
+        /* Ваши стили */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 4% 10vh;
+            gap: 20px;
+        }
+
+        .plyr{
+        border-radius: 10px
+        }
+
+        .video-player {
+            flex: 1 1 60%;
+            min-width: 300px;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        .video-player video {
+            width: 100%;
+            height: auto;
+            max-height: 100%;
+        }
+
+        .video-info {
+            margin-top: 15px;
+        }
+
+        .video-info h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .video-info p {
+            margin: 5px 0;
+            color: #777;
+        }
+
+        .video-info .author-info {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .actions button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #555;
+            margin-right: 20px;
+        }
+
+        .actions button:hover {
+            color: #000;
+        }
+
+        .video-description {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-description h4 {
+            margin: 0 0 0.5%;
+        }
+
+        .video-description p {
+            margin: 0;
+            white-space: pre-line; /* Сохраняет перевод строк и пробелы */
+        }
+
+        .video-description a {
+            color: #1a73e8; /* Синий цвет для ссылок */
+            text-decoration: underline; /* Подчеркивание ссылок */
+        }
+
+        .video-description a:hover {
+            color: #0c63e4; /* Более темный синий цвет при наведении */
+            text-decoration: underline; /* Подчеркивание при наведении */
+        }
+
+        .suggested-videos {
+            flex: 1 1 35%;
+            min-width: 300px;
+        }
+
+        .suggested-videos h3 {
+            margin-bottom: 15px;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .video-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background-color: #fff;
+            padding: 7px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .video-item img {
+            width: 100%;
+            height: 100%; /* Set a fixed height for images */
+            object-fit: cover; /* Ensures the image covers the space without distortion */
+            border-radius: 8px
+        }
+
+        .video-item div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-item h3 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+            line-height: 1.2;
+            color: #181818;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .video-item h4 {
+    margin: 0;
+    margin-top: -5px;
+    font-size: 15px;
+    padding: 4px 10px;
+    color: #0f0f0f;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal; /* Позволяет перенос текста */
+    line-height: 1.2; /* Настройка межстрочного интервала */
+    display: -webkit-box; /* Добавление обрезки текста */
+    -webkit-line-clamp: 2; /* Ограничение текста двумя строками */
+    -webkit-box-orient: vertical; /* Вертикальная ориентация обрезки */
+}
+
+.video-item p {
+    margin: 0px;
+    padding: 0px 10px;
+    color: #0f0f0f;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal; /* Позволяет перенос текста */
+    line-height: 1.2; /* Настройка межстрочного интервала */
+    display: -webkit-box; /* Добавление обрезки текста */
+    -webkit-line-clamp: 1; /* Ограничение текста одной строкой */
+    -webkit-box-orient: vertical; /* Вертикальная ориентация обрезки */
+}
+
+        .video-item span {
+            font-size: 12px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit; /* Сохраняет цвет текста по умолчанию */
+        }
+
+        /* Медиа-запросы */
+        @media screen and (max-width: 980px) {
+            .main-content {
+                padding: 10% 5vh;
+            }
+
+            .video-player {
+                flex: 1 1 100%;
+                height: auto;
+            }
+
+            .suggested-videos {
+                flex: 1 1 100%;
+            }
+
+            .video-info {
+            margin-left: 1vw;
+            }
+        }
+
+        @media only screen and (max-device-width: 812px) and (orientation: portrait) {
+          .plyr--fullscreen-active video {
+            transform: rotate(-90deg) scale(1.33);
+          }
+        }
+
+        @media screen and (max-width: 768px) {
+        .plyr__volume {
+            display: none !important;
+        }
+        .container {
+            flex-direction: column;
+        }
+
+        header {
+            flex-wrap: wrap;
+        }
+
+        aside {
+            display: none;
+        }
+        .main-content {
+            flex-direction: column;
+            margin-left: 0px;
+            margin-top: 8vh;
+            padding: 0px 0px 0px;
+        }
+
+        .video-player,
+        .suggested-videos {
+            flex: 1 1 100%;
+            padding: 10px;
+        }
+
+        .video-description {
+            padding: 10px;
+        }
+
+        .video-item div {
+            margin-left: 0;
+        }
+        }
+
+        @media screen and (max-width: 480px) {
+            header {
+                align-items: center;
+            }
+            .video-player {
+                padding: 5px;
+            }
+
+            .nav-buttons {
+                display: none;
+            }
+
+            .category-tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 10px;
+            }
+
+            .category-tabs button {
+                display: inline-block;
+                margin-right: 10px;
+            }
+
+            .suggested-videos {
+                padding: 5px;
+            }
+
+            .video-item {
+                padding: 5px;
+            }
+
+            .actions button {
+                font-size: 16px;
+            }
+        }
+        .hide-cursor {
+                cursor: none;
+            }
+    </style>
+</head>
+
+<body>
+<div class="header">
+    <header>
+        <a href="{{ url_for('home') }}">
+            <div class="logo">Owu <span>Alpha</span></div>
+        </a>
+        <form id="search-form" method="GET" action="{{ url_for('home') }}">
+            <input type="text" id="search-input" name="query" placeholder="Введите запрос"
+                   value="{{ request.args.get('query', '') }}">
+            <button type="submit">Поиск</button>
+        </form>
+        <div class="nav-buttons">
+            {% if current_user.is_authenticated %}
+            <button onclick="redirectToUrl('{{url_for('upload')}}')">Загрузить видео</button>
+            {% endif %}
+            <div class="profile-button" onclick="toggleMenu()">
+                <img src="{{ url_for('static', filename='avatars/' + (current_user.avatar_filename if current_user.avatar_filename else 'def-avatar.png')) }}"
+                     alt="{{ current_user.username }}" class="profile-button">
+            </div>
+
+            <!-- Выпадающее меню -->
+            <div id="profile-menu" class="profile-menu">
+                {% if current_user.is_authenticated %}
+                <div class="profile-header">
+                    <img src="{{ url_for('static', filename='avatars/' + (current_user.avatar_filename if current_user.avatar_filename else 'def-avatar.png')) }}"
+                         alt="{{ current_user.username }}">
+                    <div class="profile-info">
+                        <span>{{ current_user.username }}</span>
+                    </div>
+                    <a href="{{ url_for('view_channel', user_id=current_user.id) }}" style="margin-left: 10px">Посмотреть
+                        канал</a>
+                </div>
+                <hr>
+                <a href="{{ url_for('logout') }}"><i class="icon-logout"></i> Выйти</a>
+                <hr>
+                <dialog id="myDialog">
+                    <p>В разработке.</p>
+                    <button id="closeDialogButton">Закрыть</button>
+                </dialog>
+                <a href="#"><i class="icon"></i> Творческая студия Owu</a>
+                <hr>
+                <a href="#"><i class="icon"></i> Тема: светлая</a>
+                <a href="#"><i class="icon"></i> Язык: Русский</a>
+                <a href="#"><i class="icon"></i> Страна: Россия</a>
+                {% else %}
+                <div class="profile-header">
+                    <img src="{{ url_for('static', filename='avatars/' + 'def-avatar.png') }}">
+                    <div class="profile-info">
+                        <span>Гость</span>
+                    </div>
+                </div>
+                <hr>
+                <a href="{{ url_for('login') }}"><i class="icon-login"></i> Войти</a>
+                <a href="{{ url_for('register') }}"><i class="icon-register"></i> Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+</div>
+
+<div class="main-content">
+    <div class="video-player">
+        <video id="player" controls crossorigin playsinline autoplay>
+            {% for quality, source in available_qualities.items() %}
+            <source src="{{ source }}" type="video/mp4" size="{{ quality[:-1] }} ">
+            {% endfor %}
+        </video>
+        <div class="video-info">
+            <h2 id="video-title">{{ video.title }}</h2>
+            <div class="video-channel-info">
+                <a class="video-channel-info" href="{{ url_for('view_channel', user_id=video.user.id) }}">
+                    <img src="{{ url_for('static', filename='avatars/' + (video.user.avatar_filename if video.user.avatar_filename else 'def-avatar.png')) }}"
+                         alt="{{ video.user.username }}" class="channel-avatar">
+                    <div class="channel-details"
+                         onclick="redirectToUrl('{{ url_for('view_channel', user_id=video.user.id) }}')">
+                        <h3 class="author-info">{{ video.user.username }}</h3>
+                        <p class="video-stats"><span id="subscriber-count">{{ video.user.subscribers_count() }}</span>
+                            подписчиков</p>
+                    </div>
+                </a>
+                <button class="subscribe-button {{ 'subscribed' if not current_user.is_anonymous and current_user.is_subscribed(video.user) else '' }}"
+                        onclick="toggleSubscribe({{ video.user.id }})">
+                    {{ 'Отписаться' if not current_user.is_anonymous and current_user.is_subscribed(video.user) else
+                    'Подписаться' }}
+                </button>
+            </div>
+            <div class="actions">
+                <button onclick="likeVideo('{{ video.video_id }}')">👍 <span id="likes-count">{{ video.likes }}</span>
+                </button>
+            </div>
+        </div>
+        <div class="video-description">
+            <h4 id="views-count">{{ video.views }} просмотров • Загружено: {{ video.formatted_upload_date }}</h4>
+            <p>{{ video.description | urlize | safe }}</p>
+        </div>
+    </div>
+    <div class="suggested-videos">
+        <h2>Рекомендованные видео</h2>
+        {% for suggested_video in suggested_videos %}
+        <div class="video-item"
+             onclick="redirectToUrl('{{ url_for('view_video', video_id=suggested_video.video_id) }}')">
+            <div class="thumbnail-container-s">
+                <img src="{{ url_for('static', filename='thumbnails/' + suggested_video.thumbnail_filename) }}"
+                     alt="thumbnail">
+                <span class="video-duration-s">{{ suggested_video.duration }}</span>
+            </div>
+            <div>
+                <h4>{{ suggested_video.title }}</h4>
+                <p>{{ suggested_video.user.username }}</p>
+                <p>{{ suggested_video.views }} просмотров • {{ suggested_video.formatted_upload_date }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+<script>
+    // Инициализация Plyr
+    const player = new Plyr('#player');
+    player.on('ended', () => {
+        const firstSuggestedVideo = document.querySelector('.video-item');
+        if (firstSuggestedVideo) {
+            const videoUrl = firstSuggestedVideo.getAttribute('onclick').match(/'(.*?)'/)[1];
+            window.location.href = videoUrl; // Перенаправляем пользователя на первую рекомендованную страницу
+        }
+    });
+
+    window.player = player;
+
+    // Обработчик события воспроизведения
+    player.on('autoplay', () => {
+        incrementViews();
+    });
+
+    player.on('enterfullscreen', () => {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch((error) => {
+              console.error('Ошибка блокировки ориентации:', error);
+            });
+          }
+        });
+
+        player.on('exitfullscreen', () => {
+          if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+          }
+        });
+
+    // Функция для увеличения счетчика просмотров
+    function incrementViews() {
+        fetch('/update_views', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ video_id: '{{ video.video_id }}' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                views++; // Локальное обновление счетчика на странице
+                document.getElementById('views-count').textContent = views + ' просмотров';
+            }
+        })
+        .catch(error => console.error('Ошибка при обновлении просмотров:', error));
+    }
+
+    // Функция для лайка видео
+    function likeVideo(videoId) {
+        fetch(`/like/${videoId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновление количества лайков на странице
+                document.getElementById('likes-count').textContent = data.new_likes_count;
+            } else {
+                alert('Не удалось поставить лайк');
+            }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    }
+
+    function redirectToUrl(url) {
+        window.location.href = url;
+    }
+
+    // Функция для переключения подписки
+    function toggleSubscribe(userId) {
+        const subscribeButton = document.querySelector('.subscribe-button');
+        const isSubscribed = subscribeButton.classList.contains('subscribed');
+
+        // Немедленно изменяем состояние кнопки
+        subscribeButton.textContent = isSubscribed ? 'Подписаться' : 'Отписаться';
+        subscribeButton.classList.toggle('subscribed');
+
+        // Отправляем асинхронный запрос
+        const url = isSubscribed ? `/unsubscribe/${userId}` : `/subscribe/${userId}`;
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const subscriberCountElement = document.getElementById('subscriber-count');
+                subscriberCountElement.textContent = data.new_subscribers_count;
+            } else {
+                alert(data.message || 'Произошла ошибка');
+                // Если запрос не удался, вернуть состояние кнопки в исходное состояние
+                subscribeButton.textContent = isSubscribed ? 'Отписаться' : 'Подписаться';
+                subscribeButton.classList.toggle('subscribed');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            // Если произошла ошибка, вернуть состояние кнопки в исходное состояние
+            subscribeButton.textContent = isSubscribed ? 'Отписаться' : 'Подписаться';
+            subscribeButton.classList.toggle('subscribed');
+        });
+    }
+
+    // Функция для выбора видео
+    function selectVideo(videoSrc, title, viewCount, author, uploadDate) {
+        const currentTime = player.currentTime; // Сохраняем текущую позицию перед выбором нового видео
+        player.source = {
+            type: 'video',
+            sources: [{
+                src: videoSrc,
+                type: 'video/mp4'
+            }]
+        };
+        player.once('loadeddata', () => {
+            player.currentTime = currentTime; // Восстанавливаем позицию
+            player.play(); // Продолжаем воспроизведение
+        });
+        document.getElementById('video-title').textContent = title;
+        document.getElementById('views-count').textContent = viewCount;
+        document.querySelector('.author-info').textContent = `Автор: ${author} • Дата загрузки: ${uploadDate}`;
+    }
+    document.addEventListener('keydown', (event) => {
+        const seekTime = 10; // Время перемотки в секундах
+
+        switch (event.key) {
+            case 'j': // Перемотка назад на 10 секунд
+                player.currentTime = Math.max(player.currentTime - seekTime, 0);
+                break;
+            case 'l': // Перемотка вперед на 10 секунд
+                player.currentTime = Math.min(player.currentTime + seekTime, player.duration);
+                break;
+            case 'ArrowLeft': // Перемотка назад на 5 секунд
+                player.currentTime = Math.max(player.currentTime - 5, 0);
+                break;
+            case 'ArrowRight': // Перемотка вперед на 5 секунд
+                player.currentTime = Math.min(player.currentTime + 5, player.duration);
+                break;
+        }
+    });
+
+    function toggleMenu() {
+const menu = document.getElementById('profile-menu');
+menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+document.addEventListener('click', function(event) {
+const isClickInside = document.querySelector('.profile-button').contains(event.target);
+const menu = document.getElementById('profile-menu');
+if (!isClickInside) {
+    menu.style.display = 'none';
+}
+});
+
+    const myDialog = document.getElementById('myDialog');
+    const closeDialogButton = document.getElementById('closeDialogButton');
+
+    // Добавляем функциональность к существующим элементам
+    document.querySelectorAll('.icon').forEach(item => {
+        item.addEventListener('click', (event) => {
+            event.preventDefault(); // Предотвращаем переход по ссылке
+            myDialog.showModal();   // Открываем диалоговое окно
+        });
+    });
+
+    // Добавляем событие на кнопку закрытия диалога
+    closeDialogButton.addEventListener('click', () => {
+        myDialog.close(); // Закрываем диалоговое окно
+    });
+
+    const playerContainer = document.querySelector('.video-player');
+
+let hideControlsTimeout;
+
+function hideControlsAndCursor() {
+    playerContainer.classList.add('hide-cursor');
+    player.elements.controls.style.opacity = '0';
+}
+
+function showControlsAndCursor() {
+    clearTimeout(hideControlsTimeout);
+    playerContainer.classList.remove('hide-cursor');
+    player.elements.controls.style.opacity = '1';
+
+    hideControlsTimeout = setTimeout(hideControlsAndCursor, 3000);
+}
+
+// Добавляем обработчики событий
+playerContainer.addEventListener('mousemove', showControlsAndCursor);
+playerContainer.addEventListener('mouseleave', hideControlsAndCursor);
+
+// Начинаем с показа контролов
+showControlsAndCursor();
+</script>
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Video Sharing Site</title>
+</head>
+<body>
+<h1>My Videos</h1>
+<ul>
+    {% for video in videos %}
+    <li><a href="{{ url_for('watch', id=video.id) }}">{{ video.filename }}</a></li>
+    {% endfor %}
+</ul>
+</body>
+</html>

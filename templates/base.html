@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+    .video-thumbnail {
+        max-width: 1280px;
+        max-height: 720px;
+        width: auto;
+        height: auto;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .video-details {
+        flex: 1;
+        margin-left: 10px;
+    }
+
+    .channel-item {
+        text-align: center;
+    }
+
+    .profile-button {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .profile-button img {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+    }
+
+    .profile-menu {
+        display: none;
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        background-color: var(--profile-menu-background-color);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        overflow: hidden;
+        z-index: 1000;
+        width: 300px;
+        padding: 16px;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        padding-bottom: 10px;
+    }
+
+    .profile-header img {
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        margin-right: 10px;
+    }
+
+    .profile-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .profile-menu a {
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        color: var(--text-color);
+        text-decoration: none;
+        transition: background-color 0.3s;
+        font-size: 14px;
+    }
+
+    .profile-menu a:hover {
+        background-color: var(--profile-menu-a-hover-color);
+    }
+
+    .profile-menu i {
+        margin-right: 10px;
+    }
+
+    .profile-menu hr {
+        margin: 10px 0;
+        border: none;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    @media screen and (max-width: 1024px) {
+        .video-channel-info {
+            display: flex;
+            margin: 0px;
+            padding: 0px;
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        .container {
+            flex-direction: column;
+        }
+
+        header {
+            flex-wrap: wrap;
+        }
+
+        main {
+            margin-left: 0px;
+            margin-top: 15vh;
+            padding: 0px 0px 0px;
+        }
+
+        .logo {
+            margin-left: 10px;
+        }
+
+        header {
+            padding: 10px 10px;
+        }
+
+        #search-form {
+            order: 3;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        aside {
+            display: none;
+        }
+
+        main {
+            width: 100%;
+        }
+
+        .videos-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .channel-info {
+            display: flex;
+            margin-bottom: 10px;
+            padding: 1%;
+        }
+    }
+
+    @media screen and (max-width: 480px) {
+        body {
+            font-size: 14px;
+        }
+
+        header {
+            align-items: center;
+        }
+
+        .nav-buttons {
+            display: none;
+        }
+
+        .category-tabs {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 10px;
+        }
+
+        .category-tabs button {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .videos-grid {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-item {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: auto;
+        }
+
+        .video-info-main {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .channel-avatar {
+            width: 40px;
+            height: 40px;
+        }
+
+        .channels-container {
+            display: column;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .channel-avatar-container {
+            margin-bottom: 10px;
+        }
+
+        .channel-avatar {
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+        }
+
+        .channel-info h3 {
+            font-size: 1.2em;
+            margin: 0;
+        }
+
+        .channel-info p {
+            color: #888;
+        }
+    }
+
+    .nav-buttons {
+        display: flex;
+    }
+
+    .nav-buttons a {
+        margin-right: 15px;
+    }
+
+    .profile-button {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    {% block style %}
+    {% endblock %}
+</style>
+
+
+</head>
+<body>
+<div class="container">
+    <!-- Верхняя навигация -->
+    <div class="header">
+    <header>
+        <a href="{{ url_for('home') }}">
+            <div class="logo">Owu <span>Alpha</span></div>
+        </a>
+        <form id="search-form" method="GET" action="{{ url_for('home') }}">
+            <input type="text" id="search-input" name="query" placeholder="Введите запрос"
+                   value="{{ request.args.get('query', '') }}">
+            <button type="submit">Поиск</button>
+        </form>
+        <div class="nav-buttons">
+            {% if current_user.is_authenticated %}
+            <button onclick="redirectToUrl('{{url_for('upload')}}')">Загрузить видео</button>
+            {% endif %}
+            <div class="profile-button" onclick="toggleMenu()">
+                <img src="{{ url_for('static', filename='avatars/' + (current_user.avatar_filename if current_user.avatar_filename else 'def-avatar.png')) }}"
+                     alt="{{ current_user.username }}" class="profile-button">
+            </div>
+
+            <!-- Выпадающее меню -->
+            <div id="profile-menu" class="profile-menu">
+                {% if current_user.is_authenticated %}
+                <div class="profile-header">
+                    <img src="{{ url_for('static', filename='avatars/' + (current_user.avatar_filename if current_user.avatar_filename else 'def-avatar.png')) }}"
+                         alt="{{ current_user.username }}">
+                    <div class="profile-info">
+                        <span>{{ current_user.username }}</span>
+                    </div>
+                    <a href="{{ url_for('view_channel', user_id=current_user.id) }}" style="margin-left: 10px">Посмотреть
+                        канал</a>
+                </div>
+                <hr>
+                <a href="{{ url_for('logout') }}"><i class="icon-logout"></i> Выйти</a>
+                <hr>
+                <dialog id="myDialog">
+                    <p>В разработке.</p>
+                    <button id="closeDialogButton">Закрыть</button>
+                </dialog>
+                <a href="#"><i class="icon"></i> Творческая студия Owu</a>
+                <hr>
+                <a onclick="toggleTheme()" id="theme-toggle"><i class="icon"></i> Тема: светлая</a>
+                <a href="#"><i class="icon"></i> Язык: Русский</a>
+                <a href="#"><i class="icon"></i> Страна: Россия</a>
+                {% else %}
+                <div class="profile-header">
+                    <img src="{{ url_for('static', filename='avatars/' + 'def-avatar.png') }}">
+                    <div class="profile-info">
+                        <span>Гость</span>
+                    </div>
+                </div>
+                <hr>
+                <a href="{{ url_for('login') }}"><i class="icon-login"></i> Войти</a>
+                <a href="{{ url_for('register') }}"><i class="icon-register"></i> Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+</div>
+
+    <!-- Боковая панель -->
+    <aside>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Главная</a></li>
+                <li><a href="#">Подписки</a></li>
+                <ul>
+                    <!-- Проверяем, что current_user авторизован -->
+                    {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('view_channel', user_id=current_user.id) }}">Мой канал</a></li>
+                    {% else %}
+                    <li><a href="#">Мой канал</a></li>
+                    {% endif %}
+                </ul>
+                <li><a href="#">История</a></li>
+                <li><a href="#">Ваши видео</a></li>
+                <li><a href="#">Смотреть позже</a></li>
+                <li><a href="{{ url_for('liked_videos')}}">Понравившиеся</a></li>
+            </ul>
+        </nav>
+        <footer>
+        </footer>
+    </aside>
+
+    <!-- Основное содержимое -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script>
+    // Функция для переключения тем
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+
+        // Меняем текст темы
+        const themeLink = document.getElementById("theme-toggle");
+        themeLink.innerHTML = `<i class="icon"></i> Тема: ${newTheme === "dark" ? "темная" : "светлая"}`;
+    }
+
+    // Загрузка темы при загрузке страницы
+    (function() {
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+
+        // Установка текста темы при загрузке страницы
+        const themeLink = document.getElementById("theme-toggle");
+        themeLink.innerHTML = `<i class="icon"></i> Тема: ${savedTheme === "dark" ? "темная" : "светлая"}`;
+    })();
+
+    document.getElementById('search-form').addEventListener('submit', function(event) {
+        var searchInput = document.getElementById('search-input');
+        if (searchInput.value.trim() === '') {
+            event.preventDefault(); // Предотвращаем отправку формы
+        }
+    });
+        // Функция для переключения подписки
+            function toggleSubscribe(userId) {
+        const subscribeButton = event.target; // Получаем кнопку, на которую нажали
+        const isSubscribed = subscribeButton.classList.contains('subscribed');
+        const url = isSubscribed ? `/unsubscribe/${userId}` : `/subscribe/${userId}`;
+
+        // Немедленно изменяем состояние кнопки
+        subscribeButton.textContent = isSubscribed ? 'Подписаться' : 'Отписаться';
+        subscribeButton.classList.toggle('subscribed');
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Находим ближайший элемент с количеством подписчиков и обновляем его
+                const subscriberCountElement = subscribeButton.closest('.channel-info').querySelector('.video-stats');
+                if (subscriberCountElement) {
+                    subscriberCountElement.textContent = `${data.new_subscribers_count} подписчиков • {{ videos|length }} видео`;
+                }
+            } else {
+                console.error(data.message || 'Произошла ошибка');
+                // Если запрос не удался, возвращаем состояние кнопки
+                subscribeButton.textContent = isSubscribed ? 'Отписаться' : 'Подписаться';
+                subscribeButton.classList.toggle('subscribed');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            // Если произошла ошибка, возвращаем состояние кнопки
+            subscribeButton.textContent = isSubscribed ? 'Отписаться' : 'Подписаться';
+            subscribeButton.classList.toggle('subscribed');
+        });
+
+        // Предотвращаем переход по ссылке
+        event.preventDefault();
+    }
+        // Получаем ссылки на все элементы, которые должны открывать диалог
+    // Получаем ссылку на диалоговое окно и кнопку закрытия
+    const myDialog = document.getElementById('myDialog');
+    const closeDialogButton = document.getElementById('closeDialogButton');
+
+    // Добавляем функциональность к существующим элементам
+    document.querySelectorAll('.tab').forEach(item => {
+        item.addEventListener('click', (event) => {
+            event.preventDefault(); // Предотвращаем переход по ссылке
+            myDialog.showModal();   // Открываем диалоговое окно
+        });
+    });
+
+    // Добавляем событие на кнопку закрытия диалога
+    closeDialogButton.addEventListener('click', () => {
+        myDialog.close(); // Закрываем диалоговое окно
+    });
+
+        function redirectToUrl(url) {
+                window.location.href = url;
+            }
+
+        function toggleMenu() {
+        const menu = document.getElementById('profile-menu');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function(event) {
+        const isClickInside = document.querySelector('.profile-button').contains(event.target);
+        const menu = document.getElementById('profile-menu');
+        if (!isClickInside) {
+            menu.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

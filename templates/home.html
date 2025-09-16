@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+    .video-thumbnail {
+        max-width: 1280px;
+        max-height: 720px;
+        width: auto;
+        height: auto;
+    }
+    a {
+        text-decoration: none;
+        color: inherit; /* Сохраняет цвет текста по умолчанию */
+    }
+    .video-details {
+        flex: 1;
+        margin-left: 10px;
+    }
+    .channel-item {
+        text-align: center;
+    }
+    @media screen and (max-width: 1024px) {
+    .container {
+        padding: 0 10px;
+    }
+    .video-channel-info {
+        display: flex;
+        margin: 0px;
+        padding: 0px;
+    }
+
+}
+
+/* Styles for tablets in portrait mode and large phones */
+@media screen and (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    main {
+        margin-left: 0px;
+        margin-top: 13vh;
+        padding: 0px 0px 0px;
+        width: 100%;
+    }
+
+    #search-form {
+        order: 3;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    aside {
+        display: none;
+    }
+
+    .videos-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .channel-info {
+        display: flex;
+        margin-bottom: 10px;
+        padding: 1%;
+    }
+}
+
+/* Styles for mobile phones */
+@media screen and (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+
+    .nav-buttons {
+        display: none;
+    }
+
+    .category-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 10px;
+    }
+
+    .category-tabs button {
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    .videos-grid {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .video-item {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .video-thumbnail {
+        width: 100%;
+        height: auto;
+    }
+
+    .video-info-main {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .channel-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Mobile navigation */
+    .mobile-nav {
+        display: flex;
+        justify-content: space-around;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        padding: 10px 0;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .mobile-nav a {
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .mobile-nav img {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 5px;
+    }
+    .channels-container {
+        display: column;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .channel-avatar-container {
+        margin-bottom: 10px;
+    }
+
+    .channel-avatar {
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+    }
+
+    .channel-info h3 {
+        font-size: 1.2em;
+        margin: 0;
+    }
+
+    .channel-info p {
+        color: #888;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="category-tabs">
+        <button class="active">Все</button>
+        <button>Развлечения</button>
+        <button>Музыка</button>
+        <button>Новости и политика</button>
+        <button>Спорт</button>
+        <button>Наука и техника</button>
+        <button>Образование</button>
+        <button>Игры</button>
+        <button>Путешествия</button>
+        <button>Фильмы и анимация</button>
+    </div>
+
+    <div class="search-section">
+        <div class="channels-container">
+            {% for channel in channels %}
+            <div class="channel-info">
+                <a class="channel-info" href="{{ url_for('view_channel', user_id=channel.id) }}">
+                    <img src="{{ url_for('static', filename='avatars/' + (channel.avatar_filename if channel.avatar_filename else 'def-avatar.png')) }}"
+                         alt="{{ channel.username }}" class="channel-avatar">
+                    <div class="channel-details">
+                        <h3 class="author-info">{{ channel.username }}</h3>
+                        <p class="video-stats">{{ channel.subscribers_count() }} подписчиков</p>
+                    </div>
+                </a>
+                <a class="channel-button-subscribe">
+                    <button class="subscribe-button {{ 'subscribed' if not current_user.is_anonymous and current_user.is_subscribed(channel) else '' }}"
+                            onclick="toggleSubscribe({{ channel.id }})">
+                        {{ 'Отписаться' if not current_user.is_anonymous and current_user.is_subscribed(channel)
+                        else 'Подписаться' }}
+                    </button>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Результаты поиска видео -->
+    <div class="videos-grid">
+        {% for video in videos %}
+        <div class="video-item">
+            <a href="{{ url_for('view_video', video_id=video.video_id) }}">
+                <div class="thumbnail-container">
+                    <img src="{{ url_for('static', filename='thumbnails/' + video.thumbnail_filename) }}"
+                         alt="{{ video.title }}" class="video-thumbnail">
+                    <span class="video-duration">{{ video.duration }}</span>
+                </div>
+                <div class="video-info-main">
+                    <img src="{{ url_for('static', filename='avatars/' + (video.user.avatar_filename if video.user.avatar_filename else 'def-avatar.png')) }}"
+                         alt="{{ video.user.username }}" class="channel-avatar">
+                    <div class="video-details">
+                        <h3>{{ video.title }}</h3>
+                        <p class="channel-name">{{ video.user.username }}</p>
+                        <p class="video-stats">{{ video.views }} просмотров • {{ video.formatted_upload_date }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+        {% endblock %}
+
+<script>
+        document.getElementById('search-form').addEventListener('submit', function(event) {
+        var searchInput = document.getElementById('search-input');
+        if (searchInput.value.trim() === '') {
+            event.preventDefault(); // Предотвращаем отправку формы
+        }
+    });
+        // Функция для переключения подписки
+            function toggleSubscribe(userId) {
+        const subscribeButton = event.target; // Получаем кнопку, на которую нажали
+        const isSubscribed = subscribeButton.classList.contains('subscribed');
+        const url = isSubscribed ? `/unsubscribe/${userId}` : `/subscribe/${userId}`;
+
+        // Немедленно изменяем состояние кнопки
+        subscribeButton.textContent = isSubscribed ? 'Подписаться' : 'Отписаться';
+        subscribeButton.classList.toggle('subscribed');
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Находим ближайший элемент с количеством подписчиков и обновляем его
+                const subscriberCountElement = subscribeButton.closest('.channel-info').querySelector('.video-stats');
+                if (subscriberCountElement) {
+                    subscriberCountElement.textContent = `${data.new_subscribers_count} подписчиков`;
+                }
+            } else {
+                console.error(data.message || 'Произошла ошибка');
+                // Если запрос не удался, возвращаем состояние кнопки
+                subscribeButton.textContent = isSubscribed ? 'Отписаться' : 'Подписаться';
+                subscribeButton.classList.toggle('subscribed');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            // Если произошла ошибка, возвращаем состояние кнопки
+            subscribeButton.textContent = isSubscribed ? 'Отписаться' : 'Подписаться';
+            subscribeButton.classList.toggle('subscribed');
+        });
+
+        // Предотвращаем переход по ссылке
+        event.preventDefault();
+    }
+        function toggleMenu() {
+        const menu = document.getElementById('profile-menu');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function(event) {
+        const isClickInside = document.querySelector('.profile-button').contains(event.target);
+        const menu = document.getElementById('profile-menu');
+        if (!isClickInside) {
+            menu.style.display = 'none';
+        }
+    });
+
+        const myDialog = document.getElementById('myDialog');
+        const closeDialogButton = document.getElementById('closeDialogButton');
+
+        // Добавляем функциональность к существующим элементам
+        document.querySelectorAll('.tab').forEach(item => {
+            item.addEventListener('click', (event) => {
+                event.preventDefault(); // Предотвращаем переход по ссылке
+                myDialog.showModal();   // Открываем диалоговое окно
+            });
+        });
+
+        document.querySelectorAll('.item').forEach(item => {
+            item.addEventListener('click', (event) => {
+                event.preventDefault(); // Предотвращаем переход по ссылке
+                myDialog.showModal();   // Открываем диалоговое окно
+            });
+        });
+        // Добавляем событие на кнопку закрытия диалога
+    closeDialogButton.addEventListener('click', () => {
+        myDialog.close(); // Закрываем диалоговое окно
+    });
+
+    function redirectToUrl(url) {
+                window.location.href = url;
+            }
+</script>
+</body>
+</html>

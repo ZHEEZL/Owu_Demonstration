@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Создать канал</h1>
+    </header>
+    <main>
+        <form method="POST" action="{{ url_for('create_channel') }}">
+            <div>
+                <label for="name">Название канала:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div>
+                <label for="description">Описание:</label>
+                <textarea id="description" name="description"></textarea>
+            </div>
+            <button type="submit">Создать</button>
+        </form>
+    </main>
+</div>
+</body>
+</html>
